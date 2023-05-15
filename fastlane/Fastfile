@@ -15,15 +15,40 @@
 
 default_platform(:ios)
 
+app_project = 'SimpleCalculator.xcodeproj'
+app_scheme = 'SimpleCalculator'
+derived_data_path = 'DerivedData'
+builds_path = 'Build'
+
 platform :ios do
   desc "Build app for tests"
-  lane :build do
-    
+  lane :build_test_app do
+    scan(
+      project: app_project,
+      scheme: app_scheme,
+      derived_data_path: derived_data_path,
+      build_for_testing: true, 
+      skip_build: true,
+      force_quit_simulator: true,
+      reset_simulator: true
+    )
   end
 
   desc "Runnig ui-tests"
   lane :tests do
-    
+    scan(
+      project: app_project,
+      scheme: app_scheme,
+      derived_data_path: derived_data_path,
+      output_directory: builds_path,
+      device: 'iPhone 12',
+      reinstall_app: true,
+      result_bundle: true,
+      test_without_building: true,
+      force_quit_simulator: true,
+      app_identifier: 'com.xctest.SimpleCalculator',
+      reset_simulator: true
+    )
   end
 
 

@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
   
 env:
-  TEST: "123"    
+  LANG: "en_US.UTF-8" 
+  LC_ALL: "en_US.UTF-8"
+  OS-latest: "macos-13"
 
 jobs:
   build:
@@ -15,10 +17,28 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v3
         
-      - name: Build app
+      - name: Setup ruby env
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.1'
+          # image-os: 'macos-13'
+
+      - name: Install Fastlane
+        run: bundle install
+            
+      - name: Install & update Fastlane plugins
         run: |
-          env
+          bundle exec fastlane install_plugins
+          bundle exec fastlane update_plugins
+
+      - name: Build app
+        run: bundle exec fastlane ios build_test_app
 
       - name: Run tests
-        run: |
-          pwd
+        run: bundle exec fastlane ios tests
+
+      - name: Save test report
+        uses: actions/upload-artifact@v3
+        with:
+          name: Test Report
+          path: ./Build/SimpleCalculator.xcresult
