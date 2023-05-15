@@ -39,6 +39,30 @@ jobs:
 
       - name: Save test report
         uses: actions/upload-artifact@v3
+        if: ${{ always() }}
         with:
           name: Test Report
           path: ./Build/SimpleCalculator.xcresult
+
+      - name: Download allure xcresult parser
+        if: ${{ always() }}
+        run: |
+          curl -OL https://github.com/eroshenkoam/xcresults/releases/latest/download/xcresults
+          chmod +x xcresults 
+    
+      - name: Download allurectl
+        if: ${{ always() }}
+        run: |
+          curl -L -o allurectl https://github.com/allure-framework/allurectl/releases/latest/download/allurectl_darwin_amd64
+          chmod +x allurectl
+    
+      - name: Parse xcresult to allure results
+        if: ${{ always() }}
+        run: ./xcresults export ./Build/SimpleCalculator.xcresult allure-results
+
+      - name: Save test report
+        uses: actions/upload-artifact@v3
+        if: ${{ always() }}
+        with:
+          name: Allure Report
+          path: allure-results
