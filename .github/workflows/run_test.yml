@@ -1,0 +1,24 @@
+name: iOS starter workflow
+
+on:
+  workflow_dispatch:
+  
+env:
+  TEST: "123"    
+
+jobs:
+  build:
+    name: Build and Test iOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+        
+      - name: Build app
+        run: |
+          env
+
+      - name: Run tests
+        run: |
+          pwd
