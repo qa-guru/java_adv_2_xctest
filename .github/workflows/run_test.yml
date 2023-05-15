@@ -15,6 +15,14 @@ jobs:
     steps:
       - name: Checkout source code
         uses: actions/checkout@v3
+        with:
+          clean: true
+      
+      - name: Remove old files
+        run: |
+          rm -rf ./Build || true
+          rm -rf ./DerivedData || true
+          rm -rf ./allure-results || true
         
       - name: Setup ruby env
         uses: ruby/setup-ruby@v1.139.0
@@ -37,12 +45,18 @@ jobs:
       - name: Run tests
         run: bundle exec fastlane ios tests
 
+      - name: Archive xcresult
+        if: ${{ always() }}
+        working-directory: ./Build
+        run: zip -r SimpleCalculator.zip SimpleCalculator.xcresult
+        
       - name: Save test report
         uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
           name: Test Report
-          path: ./Build/SimpleCalculator.xcresult
+          path: ./Build/SimpleCalculator.zip
+          retention-days: 7
 
       - name: Download allure xcresult parser
         if: ${{ always() }}
@@ -66,3 +80,21 @@ jobs:
         with:
           name: Allure Report
           path: allure-results
+          retention-days: 7
+
+      - uses: simple-elf/allure-report-action@master
+        if: always()
+        id: allure-report
+        with:
+          allure_results: Build/allure-results
+          gh_pages: gh-pages
+          allure_report: allure-report
+          allure_history: allure-history
+
+      - name: Deploy report to Github Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v2
+        env:
+          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: allure-history
